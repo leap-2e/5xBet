@@ -1,0 +1,32 @@
+
+app.ts  
+- export const APP_NAME = "Buy Me a Coffee"
+- export const SITE_URL = "https://buymeacoffee.vercel.app"
+- export const DEFAULT_PROFILE_IMAGE = "/images/default-user.png"
+- export const DONATION_AMOUNTS = [3, 5, 10]
+
+auth.ts
+- export const TOKEN_KEY = "bmcoffee_token"
+- export const AUTH_HEADER = "Authorization"
+- export const LOGIN_SUCCESS_MESSAGE = "Welcome back!"
+- export const LOGIN_FAILED_MESSAGE = "Invalid credentials"
+
+donation.ts 
+- export const CURRENCY = "MNT"
+- export const MAX_DONATION_AMOUNT = 1000000
+- export const MIN_DONATION_AMOUNT = 1000
+- export const DONATION_STATUS = {
+  PENDING: "pending",
+  SUCCESS: "success",
+  FAILED: "failed",
+}
+
+routes.ts 
+- export const ROUTES = {
+  HOME: "/",
+  SIGN_IN: "/auth/sign-in",
+  SIGN_UP: "/auth/sign-up",
+  DASHBOARD: "/dashboard",
+  DONATE: (username: string) => `/profile/${username}`,
+  PROFILE_EDIT: "/dashboard/profile",
+}
