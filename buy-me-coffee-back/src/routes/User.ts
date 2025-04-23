@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { createUser } from "../controller/User";
+import { signUp, refresh, getUser } from "../controller/User";
 
 const authRouter = Router();
 
-authRouter.post("/", createUser)
+authRouter.post("/", signUp)
+
+authRouter.get("/:id", getUser)
 
 export {
     authRouter
