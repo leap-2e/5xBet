@@ -1,0 +1,26 @@
+
+use-auth.ts        # Authentication hook- Хэрэглэгчийн нэвтрэлт, бүртгэл, логин статус зэргийг удирдана.
+// Жишээ:
+// - login, logout функцүүд
+// - useEffect ашиглан хэрэглэгчийн токеныг шалгах
+// - isAuthenticated, currentUser гэх мэт state-ууд
+
+
+use-donations.ts   # Donations data hook-Хандивын мэдээлэл авах, илгээхтэй холбоотой логик.
+// Жишээ:
+// - useEffect ашиглан /api/donations-оос fetch хийх
+// - donate() функц: шинэ хандив илгээх
+// - donations array, loading, error гэх мэт state-ууд
+
+
+use-creator.ts     # Creator data hook- Сайтад байгаа уран бүтээлчдийн мэдээллийг fetch хийж авах.
+// Жишээ:
+// - useEffect ашиглан /api/users/[id] API дуудна
+// - creatorProfile, loading гэх мэт state-ууд
+// - fetchCreatorByUsername(username: string)
+
+use-form.ts        # Form handling hook-Формын өгөгдөл хадгалах, өөрчлөх, шалгах логик.
+// Жишээ:
+// - formState, setFormState
+// - handleChange(), handleSubmit() функцүүд
+// - validateForm() логик
