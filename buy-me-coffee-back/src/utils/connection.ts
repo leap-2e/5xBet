@@ -1,22 +1,10 @@
-import { Client } from 'pg';
+// import { Client } from 'pg';
+
+//Өгөгдлийн бааз руу хандалт хийх тохиргооны хэсэг
+import { neon } from '@neondatabase/serverless'
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-async function connectDB() {
-  try {
-    await client.connect();
-    console.log('Connected to Neon Postgres!');
-  } catch (error) {
-    console.error('Error connecting to Neon Postgres:', error);
-  }
-}
-
-export { client, connectDB };
+const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+export const client = neon(`postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}/${PGDATABASE}?sslmode=require`);
