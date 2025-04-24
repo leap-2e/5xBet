@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import SignEmailPass from "./SignEmailPass";
-import SignUsername from "./SignUsername";
+import SignEmailPass from "../../../components/auth/SignEmailPass";
+import SignUsername from "../../../components/auth/SignUsername";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 export default function SignUp() {
