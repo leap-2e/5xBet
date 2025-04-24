@@ -21,7 +21,7 @@ const formSchema = z.object({
     email: z.string().email("Please enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
 });
-export default function LoginBack() {
+export default function SignIn() {
     const router = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
