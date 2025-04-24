@@ -14,7 +14,7 @@ export default function SignUp() {
     const router = useRouter();
     const signUp = async (email: string, password: string) => {
         try {
-            await axios.post("/api/sign-up", {
+            await axios.post("/api/signUp", {
                 email,
                 password,
                 username: signUps,
