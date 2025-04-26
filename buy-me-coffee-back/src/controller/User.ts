@@ -1,4 +1,5 @@
 import { client } from "../utils/connection"
+import bcrypt from "bcrypt"
 
 export const signUp =  async(req,res,body) => {
     try {
@@ -31,3 +32,32 @@ export const getUser = async(req,res) => {
         res.status(400).json({success:false, message: error.message})
     }
 }
+export const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const fields = [];
+    const values = [];
+  
+    let index = 1;
+  
+    for (let key in req.body) {
+      fields.push(`${key} = $${index}`);
+      values.push(req.body[key]);
+      index++;
+    }
+  
+    if (fields.length === 0) {
+      return res.status(400).json({ message: 'No data provided to update' });
+    }
+  
+    const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${index} RETURNING *`;
+    values.push(id);
+  
+    try {
+      const result = await client.query(query, values);
+      res.json(result[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error updating user' });
+    }
+  };
+  
