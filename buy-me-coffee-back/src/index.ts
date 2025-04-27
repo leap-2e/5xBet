@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { client } from './utils/connection';
-import { authRouter } from "./routes/User";
-// import { client, connectDB } from './utils/connection';
+import { authRouter } from "./routes/Auth";
+import { userRouter } from "./routes/User";
+// import { client } from './utils/connection';
 
 const port = 8000;
 const app = express();
@@ -21,4 +21,5 @@ app.use("/hello", (_req,res) => {
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-app.use("/user", authRouter);
+app.use("/auth", authRouter);
+app.use("/profile", userRouter);
