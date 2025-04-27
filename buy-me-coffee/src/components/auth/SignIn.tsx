@@ -24,6 +24,7 @@ export default function SignIn() {
 
     const router = useRouter();
     const { signIn, isLoaded, setActive } = useSignIn(); //CLERK
+    const [error, setError] = useState<string>("")
     const form = useForm<z.infer<typeof SignInschema>>({
         resolver: zodResolver(SignInschema),
         defaultValues: {
@@ -56,7 +57,7 @@ export default function SignIn() {
         } catch (err: any) {
             const errorMessage = err?.errors?.[0]?.message || "Something went wrong. Please try again.";
             console.error("SignIn error:", errorMessage);
-
+            setError(err?.errors?.[0]?.message || err)
             toast.error(errorMessage); // Алдаа гарвал popup-аар мэдэгдэнэ
         }
     };
@@ -125,6 +126,11 @@ export default function SignIn() {
                         </form>
                     </Form>
                 </div>
+                {error && (
+                    <div className="text-red-500 text-sm text-center">
+                        {error}
+                    </div>
+                )}
             </div>
         </div>
 

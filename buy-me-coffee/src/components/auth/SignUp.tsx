@@ -68,7 +68,8 @@ export default function SignUp() {
             }
         } catch (err: any) {
             console.error("Signup error:", err?.errors?.[0]?.message || err);
-            toast.error(err?.errors?.[0]?.message || "Signup failed."); // Алдаа гарвал popup-аар мэдэгдэнэ
+            toast.error(err?.errors?.[0]?.message || "Signup failed.");// Алдаа гарвал popup-аар мэдэгдэнэ
+            setError(err?.errors?.[0]?.message || err)
         }
     };
 
