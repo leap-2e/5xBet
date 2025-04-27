@@ -17,25 +17,45 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
-const formSchema = z.object({
-    email: z.string().email("Please enter a valid email"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-});
+import { SignInschema } from "./SignUtils";
+import { useSignIn } from "@clerk/nextjs";
+
 export default function SignIn() {
 
     const router = useRouter();
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const { signIn, isLoaded, setActive } = useSignIn(); //CLERK
+    const form = useForm<z.infer<typeof SignInschema>>({
+        resolver: zodResolver(SignInschema),
         defaultValues: {
             email: "",
             password: "",
         },
     });
+    const onSubmit = async (values: z.infer<typeof SignInschema>) => {
+        if (!isLoaded) return;
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
+        try {
+            const result = await signIn.create({
+                identifier: values.email, // (email or username both work)
+                password: values.password,
+            });
 
-    }
+            if (result.status === "complete") {
+                await setActive({ session: result.createdSessionId });
+                console.log("✅ Signed in successfully");
+                toast.success("Successfully ✅ Signed In ")
+                router.push("/createProfile");
+            } else {
+                console.log("⏳ Awaiting further steps (like 2FA)");
+            }
+        } catch (err: any) {
+            const errorMessage = err?.errors?.[0]?.message || "Something went wrong. Please try again.";
+            console.error("SignIn error:", errorMessage);
+            toast.error(errorMessage);
+        }
+    };
+
+
     return (
         <div className="py-10 px-20 w-[100%] h-screen">
 
