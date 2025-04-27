@@ -1,15 +1,13 @@
 import { Router } from "express";
-import { signUp, refresh, getUser, updateUser } from "../controller/User";
+import { createProfile, getUserProfile } from "../controller/User";
 
-const authRouter = Router();
+const userRouter = Router();
 
-authRouter.post("/", signUp)
+userRouter.post("/", createProfile)
 
-authRouter.get("/:id", getUser)
-
-authRouter.patch("/:id", updateUser)
+userRouter.get("/:id", getUserProfile)
 
 
 export {
-    authRouter
+    userRouter
 }
