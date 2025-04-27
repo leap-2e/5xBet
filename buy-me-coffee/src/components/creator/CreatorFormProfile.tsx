@@ -7,18 +7,19 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { ProfileFormData, ProfileSchema } from "./FormUtils" //zod schema + type
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { ProfileType, ProfileSchema } from "./CreatorFormUtils"
 
 
 export default function CreatorFormProfile() {
 
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [image, setImage] = useState<File | null>(null)
-    const [userData, setUserData] = useState<ProfileFormData>()
+    const [userData, setUserData] = useState<ProfileType>()
 
     // ✅ useForm ашиглан Zod-ийн validation-г формд холбож, form-н анхны утгуудыг defaultValues ашиглан зааж өгч байна
-    const form = useForm<ProfileFormData>({
+    // 🛠️ initialize react-hook-form + Zod + define default value
+    const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
         defaultValues: {
             name: "",
@@ -29,24 +30,19 @@ export default function CreatorFormProfile() {
     })
 
     //values = all input values 
-    const onSubmit = (values: ProfileFormData) => {
+    const onSubmit = (values: ProfileType) => {
         setUserData(values)
-        console.log(userData);
+        console.log(values);
 
     }
-
-
-    const handleImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selected = event.target.files?.[0];
-        if (!selected) return;
-        setImage(selected);
-        setImagePreview(URL.createObjectURL(selected));
-    };
-
+    useEffect(() => { console.log(userData); }, [])
     return (
         <div className="w-full h-full">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+                    {/* ✅📸 Image Upload Input */}
+
                     <FormField
                         control={form.control}
                         name="image"
@@ -82,6 +78,8 @@ export default function CreatorFormProfile() {
                         )}
                     />
 
+                    {/* ✅  Name Input */}
+
                     <FormField
                         control={form.control}
                         name="name"
@@ -97,6 +95,8 @@ export default function CreatorFormProfile() {
                         )}
                     />
 
+                    {/* ✅ 📝 About Input */}
+
                     <FormField
                         control={form.control}
                         name="bio"
@@ -111,6 +111,8 @@ export default function CreatorFormProfile() {
                             </FormItem>
                         )}
                     />
+
+                    {/* ✅ 🔗 Social Media URL Input */}
 
                     <FormField
                         control={form.control}
