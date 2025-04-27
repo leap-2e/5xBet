@@ -42,30 +42,35 @@ export default function SignUp() {
     };
 
     const onSubmit = async (values: FormType) => {
-        if (!isLoaded) return;
+        if (!isLoaded) return; // Clerk ачааллаж дуусаагүй бол буцаана
 
         try {
             const result = await signUp.create({
-                username: values.username,
                 emailAddress: values.email,
                 password: values.password,
+                username: values.username,
             });
 
+            console.log("Signup result:", result);
+
             if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                console.log("✅ Signed up and logged in");
-                toast.success("Successfully Signed Up!");
-                router.push("/createProfile");
+                console.log("✅ Signup complete");
+
+                await setActive({ session: result.createdSessionId }); // Шинэ хэрэглэгчийн session-г идэвхжүүлнэ
+                console.log("✅ Session activated");
+
+                toast.success("Successfully signed up!"); // Амжилттай бүртгэгдсэн popup
+
+                router.push("/createProfile"); // Бүртгэл амжилттай бол профайл үүсгэх хуудас руу зөөнө
             } else {
-                console.log("⏳ Waiting email verification or more steps...");
+                console.log("⏳ Waiting for email verification");
+                toast.error("Please verify your email first."); // Имэйл баталгаажуулалт хүлээж байна
             }
         } catch (err: any) {
             console.error("Signup error:", err?.errors?.[0]?.message || err);
-            toast.error(err?.errors?.[0]?.message || "Signup failed");
-            setError(err?.errors?.[0]?.message || "Signup failed");
+            toast.error(err?.errors?.[0]?.message || "Signup failed."); // Алдаа гарвал popup-аар мэдэгдэнэ
         }
     };
-
 
 
     return (

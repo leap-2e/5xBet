@@ -31,30 +31,35 @@ export default function SignIn() {
             password: "",
         },
     });
+
     const onSubmit = async (values: z.infer<typeof SignInschema>) => {
-        if (!isLoaded) return;
+        if (!isLoaded) return; // Clerk ачааллаж дуусаагүй бол буцаана
 
         try {
             const result = await signIn.create({
-                identifier: values.email, // (email or username both work)
+                identifier: values.email, // И-мэйл эсвэл хэрэглэгчийн нэр ашиглан нэвтэрнэ
                 password: values.password,
             });
 
+            console.log("SignIn result:", result);
+
             if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
+                await setActive({ session: result.createdSessionId }); // Session идэвхжүүлж, хэрэглэгчийг нэвтрүүлнэ
                 console.log("✅ Signed in successfully");
-                toast.success("Successfully ✅ Signed In ")
-                router.push("/createProfile");
+
+                toast.success("Successfully ✅ Signed In"); // Амжилттай нэвтэрсэн popup
+                router.push("/createProfile"); // Нэвтэрсний дараа профайл үүсгэх хуудас руу зөөнө
             } else {
-                console.log("⏳ Awaiting further steps (like 2FA)");
+                console.log("⏳ Awaiting further steps (like 2FA)"); // Нэмэлт алхам шаардлагатай (жишээ нь 2FA баталгаажуулалт)
+                toast.info("Please complete the required steps."); // Нэмэлт алхамын мэдээлэл
             }
         } catch (err: any) {
             const errorMessage = err?.errors?.[0]?.message || "Something went wrong. Please try again.";
             console.error("SignIn error:", errorMessage);
-            toast.error(errorMessage);
+
+            toast.error(errorMessage); // Алдаа гарвал popup-аар мэдэгдэнэ
         }
     };
-
 
     return (
         <div className="py-10 px-20 w-[100%] h-screen">
