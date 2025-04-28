@@ -1,52 +1,88 @@
-'use client'
+'use client';
 
+import { useState } from 'react';
 import {
-    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useEffect, useState } from "react"
-import { ProfileType, ProfileSchema } from "./CreatorFormUtils"
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { ProfileType, ProfileSchema } from './CreatorFormUtils';
+import axios from 'axios';
 
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 
 export default function CreatorFormProfile() {
-
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [image, setImage] = useState<File | null>(null)
-    const [userData, setUserData] = useState<ProfileType>()
 
-    // ✅ useForm ашиглан Zod-ийн validation-г формд холбож, form-н анхны утгуудыг defaultValues ашиглан зааж өгч байна
-    // 🛠️ initialize react-hook-form + Zod + define default value
     const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
         defaultValues: {
-            name: "",
-            bio: "",
+            name: '',
+            bio: '',
             image: undefined,
-            socialMediaURL: "",
+            socialMediaURL: '',
+        },
+    });
+
+    // 🎯 Файлаа авна
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            form.setValue('image', file); // React Hook Form-д file хадгална
+            setImagePreview(URL.createObjectURL(file)); // Зураг урьдчилж preview хийнэ
         }
-    })
+    };
 
-    //values = all input values 
-    const onSubmit = (values: ProfileType) => {
-        setUserData(values)
-        console.log(values);
+    // 🎯 Cloudinary руу upload хийх
+    const uploadImageToCloudinary = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
 
-    }
-    useEffect(() => { console.log(userData); }, [])
+        const res = await axios.post(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+            formData
+        );
+
+        return res.data.secure_url as string; // Шууд Cloudinary линк буцаана
+    };
+
+    const onContinue = async (values: ProfileType) => {
+        console.log('Form values before upload:', values);
+
+        const file = values.image;
+        if (file instanceof File) {
+            const imageUrl = await uploadImageToCloudinary(file); //Cloudinary link avah function 👆 end ajilllj bn 
+            console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+
+            // Ингэж image field-г шинэчилж болно
+            const updatedValues = { ...values, image: imageUrl };   //Backendruu yvuulah Final Value ✅
+            console.log('🔥 Final profile submit:', updatedValues);
+
+            // TODO: Backend руу updatedValues илгээж болно
+        } else {
+            console.log('⚠️ No image file to upload');
+        }
+    };
+
     return (
         <div className="w-full h-full">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onContinue)} className="space-y-6">
 
-                    {/* ✅📸 Image Upload Input */}
-
+                    {/* 📸 Image upload */}
                     <FormField
                         control={form.control}
                         name="image"
-                        render={({ field }) => (
+                        render={() => (
                             <FormItem>
                                 <FormLabel>Upload Image</FormLabel>
                                 <FormControl>
@@ -62,13 +98,7 @@ export default function CreatorFormProfile() {
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    form.setValue("image", file)
-                                                    setImagePreview(URL.createObjectURL(file))
-                                                }
-                                            }}
+                                            onChange={handleImageChange}
                                             className="absolute inset-0 opacity-0 cursor-pointer"
                                         />
                                     </label>
@@ -78,8 +108,7 @@ export default function CreatorFormProfile() {
                         )}
                     />
 
-                    {/* ✅  Name Input */}
-
+                    {/* 🧍 Name */}
                     <FormField
                         control={form.control}
                         name="name"
@@ -87,16 +116,14 @@ export default function CreatorFormProfile() {
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter your name here here" {...field} />
+                                    <Input placeholder="Enter your name" {...field} />
                                 </FormControl>
-
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
 
-                    {/* ✅ 📝 About Input */}
-
+                    {/* 📝 Bio */}
                     <FormField
                         control={form.control}
                         name="bio"
@@ -104,34 +131,35 @@ export default function CreatorFormProfile() {
                             <FormItem>
                                 <FormLabel>About</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Write about yourself here" {...field} />
+                                    <Input placeholder="Write about yourself" {...field} />
                                 </FormControl>
-
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
 
-                    {/* ✅ 🔗 Social Media URL Input */}
-
+                    {/* 🔗 Social Media URL */}
                     <FormField
                         control={form.control}
                         name="socialMediaURL"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Social media URL</FormLabel>
+                                <FormLabel>Social Media URL</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https.//" {...field} />
+                                    <Input placeholder="https://" {...field} />
                                 </FormControl>
-
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit">Submit</Button>
+
+                    {/* 🔥 Continue Button */}
+                    <Button type="submit" className="w-full">
+                        Continue
+                    </Button>
+
                 </form>
             </Form>
         </div>
-    )
+    );
 }
-
