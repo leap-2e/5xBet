@@ -9,6 +9,7 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { PaymentSchema, type PaymentType } from "./CreatorFormUtils"
 
+
 export default function CreatorFormPayment() {
 
     // ✅ useForm ашиглан Zod-ийн validation-г формд холбож, form-н анхны утгуудыг defaultValues ашиглан зааж өгч байна
