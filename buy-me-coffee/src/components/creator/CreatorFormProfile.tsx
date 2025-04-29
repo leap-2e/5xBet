@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Form,
     FormControl,
@@ -15,12 +15,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { ProfileType, ProfileSchema } from './CreatorFormUtils';
 import axios from 'axios';
+import { request } from 'http';
 
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
 export default function CreatorFormProfile() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    type CreateProfile = {
+        name: string,
+        bio: string,
+        socialMediaURL: string,
+        image: string,
+        user_id: number,
+    }
+
+
+
 
     const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
@@ -54,20 +67,38 @@ export default function CreatorFormProfile() {
 
         return res.data.secure_url as string; // Шууд Cloudinary линк буцаана
     };
-
     const onContinue = async (values: ProfileType) => {
-        console.log('Form values before upload:', values);
+        console.log('🛠️ Form values before upload:', values);
 
         const file = values.image;
+
         if (file instanceof File) {
-            const imageUrl = await uploadImageToCloudinary(file); //Cloudinary link avah function 👆 end ajilllj bn 
-            console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+            try {
+                // 1. Upload Image
+                const imageUrl = await uploadImageToCloudinary(file);
+                console.log('✅ Image uploaded to Cloudinary:', imageUrl);
 
-            // Ингэж image field-г шинэчилж болно
-            const updatedValues = { ...values, image: imageUrl };   //Backendruu yvuulah Final Value ✅
-            console.log('🔥 Final profile submit:', updatedValues);
+                // 2. Create Updated Values
+                const updatedValues = { ...values, image: imageUrl };
+                console.log('🔥 Final profile submit:', updatedValues);
 
-            // TODO: Backend руу updatedValues илгээж болно
+                // 3. Send to Backend with Axios
+                const response = await axios.post(`${BASE_URL}/profile`, {
+                    name: updatedValues.name,
+                    about: updatedValues.bio,
+                    avatar_image: updatedValues.image,
+                    social_media_url: updatedValues.socialMediaURL,
+                    user_id: 19,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('🚀 Profile created successfully:', response.data);
+            } catch (error: any) {
+                console.log('❌ Error creating profile:', error?.response?.data || error.message);
+            }
         } else {
             console.log('⚠️ No image file to upload');
         }
