@@ -15,7 +15,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { ProfileType, ProfileSchema } from './CreatorFormUtils';
 import axios from 'axios';
-import { request } from 'http';
+
+import { UserButton } from "@clerk/nextjs";
 
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
@@ -65,7 +66,8 @@ export default function CreatorFormProfile() {
             formData
         );
 
-        return res.data.secure_url as string; // Шууд Cloudinary линк буцаана
+        return res.data.secure_url as string;
+        // Шууд Cloudinary линк буцаана
     };
     const onContinue = async (values: ProfileType) => {
         console.log('🛠️ Form values before upload:', values);
@@ -75,19 +77,21 @@ export default function CreatorFormProfile() {
         if (file instanceof File) {
             try {
                 // 1. Upload Image
-                const imageUrl = await uploadImageToCloudinary(file);
-                console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+                // const imageUrl = await uploadImageToCloudinary(file);
+                // console.log('✅ Image uploaded to Cloudinary:', imageUrl);
 
                 // 2. Create Updated Values
-                const updatedValues = { ...values, image: imageUrl };
-                console.log('🔥 Final profile submit:', updatedValues);
+                // const updatedValues = { ...values, image: imageUrl };
+                // console.log('🔥 Final profile submit:', updatedValues);
 
                 // 3. Send to Backend with Axios
+                console.log(BASE_URL);
+
                 const response = await axios.post(`${BASE_URL}/profile`, {
-                    name: updatedValues.name,
-                    about: updatedValues.bio,
-                    avatar_image: updatedValues.image,
-                    social_media_url: updatedValues.socialMediaURL,
+                    name: 'ursa',
+                    about: 'gamer',
+                    avatar_image: 'img url',
+                    social_media_url: 'insagramurl',
                     user_id: 19,
                 }, {
                     headers: {
@@ -106,6 +110,7 @@ export default function CreatorFormProfile() {
 
     return (
         <div className="w-full h-full">
+            <UserButton></UserButton>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onContinue)} className="space-y-6">
 

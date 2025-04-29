@@ -1,4 +1,5 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,31 +17,30 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+
 const formSchema = z.object({
-    email: z.string().email("Please enter a valid email"),
+    identifier: z.string().min(3, "Please enter your username or email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
 });
-export default function SignIn() {
 
+export default function SignIn() {
     const router = useRouter();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: "",
+            identifier: "",
             password: "",
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         console.log(values);
-
+        // You can later send `identifier` (username/email) to your login API
     }
+
     return (
         <div className="py-10 px-20 w-[100%] h-screen">
-
             <div className="h-full w-full px-32 flex flex-col gap-4 justify-center items-center">
-
                 <div className="w-[400px]">
                     <Form {...form}>
                         <form
@@ -48,17 +48,18 @@ export default function SignIn() {
                             className="space-y-8"
                         >
                             <div className="flex flex-col gap-2">
+                                {/* Identifier field (Email or Username) */}
                                 <FormField
                                     control={form.control}
-                                    name="email"
+                                    name="identifier"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="text-[14px] text-black">
-                                                Email
+                                                Username or Email
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Enter email here"
+                                                    placeholder="Enter username or email"
                                                     {...field}
                                                     className="border outline-none focus-within:outline-none"
                                                 />
@@ -67,6 +68,7 @@ export default function SignIn() {
                                         </FormItem>
                                     )}
                                 />
+                                {/* Password field */}
                                 <FormField
                                     control={form.control}
                                     name="password"
@@ -78,6 +80,7 @@ export default function SignIn() {
                                             <FormControl>
                                                 <Input
                                                     placeholder="Enter password here"
+                                                    type="password"
                                                     {...field}
                                                     className="border outline-none focus-within:outline-none"
                                                 />
@@ -87,21 +90,24 @@ export default function SignIn() {
                                     )}
                                 />
                             </div>
+
                             <Button
                                 type="submit"
                                 className="w-full rounded-md bg-[#18181b]"
                             >
                                 Submit
                             </Button>
-                            <div className="flex gap-2 my-3 mx-1"> <p>Create new account?</p>
-                                <Link href="/signUp"><p className="text-rose-400">Sign Up</p></Link>
-                            </div>
 
+                            <div className="flex gap-2 my-3 mx-1">
+                                <p>Create new account?</p>
+                                <Link href="/signUp">
+                                    <p className="text-rose-400">Sign Up</p>
+                                </Link>
+                            </div>
                         </form>
                     </Form>
                 </div>
             </div>
         </div>
-
     );
-} 
+}
