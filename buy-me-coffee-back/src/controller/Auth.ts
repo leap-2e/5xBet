@@ -17,8 +17,10 @@ export const signUp = async (req, res) => {
             success: true,
             message: "User created successfully!",
             user: result[0],
-        }
-    } catch (error) {
+        })
+        return;
+    }
+    catch (error: any) {
         console.error("Signup error:", error.message);
 
         if (error.code === "23505") {
