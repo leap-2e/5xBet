@@ -28,7 +28,7 @@ export default function CreatorFormPayment() {
         },
     })
 
-    //values = all input values 
+    //values = all input values
     const onSubmit = (values: PaymentType) => {
         console.log("✅ Payment Submitted:", values)
     }
