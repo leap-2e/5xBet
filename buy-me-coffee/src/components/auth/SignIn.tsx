@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -15,51 +14,80 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useSignIn, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
-const formSchema = z.object({
-    identifier: z.string().min(3, "Please enter your username or email"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+// 🧠 Form validation - Zod ашиглаж байна
+const SignInSchema = z.object({
+    identify: z.string().min(1, "И-мэйл эсвэл хэрэглэгчийн нэр шаардлагатай"),
+    password: z.string().min(8, "Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой"),
 });
 
 export default function SignIn() {
     const router = useRouter();
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const { isSignedIn } = useAuth();
+    const { signIn, isLoaded, setActive } = useSignIn();
+    const [error, setError] = useState<string>("");
+
+    // 🛠️ Form бүрдүүлэлт
+    const form = useForm<z.infer<typeof SignInSchema>>({
+        resolver: zodResolver(SignInSchema),
         defaultValues: {
-            identifier: "",
+            identify: "",
             password: "",
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
-        // You can later send `identifier` (username/email) to your login API
-    }
+    // 🚀 Form submit хийх үед
+    const onSubmit = async (values: z.infer<typeof SignInSchema>) => {
+        if (!isLoaded) return; // Clerk бүрэн ачааллаж дуусаагүй бол буцаана
+
+        try {
+            const result = await signIn.create({
+                identifier: values.identify, // ✉️ И-мэйл эсвэл хэрэглэгчийн нэрээр нэвтрэх
+                password: values.password,
+            });
+
+            if (result.status === "complete") {
+                await setActive({ session: result.createdSessionId }); // 🛡️ Session идэвхжүүлнэ
+                toast.success("✅ Амжилттай нэвтэрлээ!");
+                router.push("/dashboard"); // 🎯 Dashboard руу чиглүүлнэ
+            } else {
+                toast.info("⏳ Нэмэлт алхмуудыг гүйцээнэ үү");
+            }
+        } catch (err: any) {
+            const errorMessage = err?.errors?.[0]?.message || "Алдаа гарлаа. Дахин оролдоно уу.";
+            console.error("SignIn error:", errorMessage);
+            setError(errorMessage);
+            toast.error(errorMessage); // 🔥 Алдааны popup
+        }
+    };
+
+    // 🔥 Хэрэв аль хэдийн нэвтэрсэн бол шууд dashboard руу илгээнэ
+    useEffect(() => {
+        if (isSignedIn) {
+            router.push("/dashboard");
+        }
+    }, [isSignedIn, router]);
 
     return (
-        <div className="py-10 px-20 w-[100%] h-screen">
+        <div className="py-10 px-20 w-full h-screen">
             <div className="h-full w-full px-32 flex flex-col gap-4 justify-center items-center">
                 <div className="w-[400px]">
                     <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-8"
-                        >
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                             <div className="flex flex-col gap-2">
-                                {/* Identifier field (Email or Username) */}
+                                {/* ✉️ И-мэйл эсвэл Хэрэглэгчийн нэр оруулах хэсэг */}
                                 <FormField
                                     control={form.control}
-                                    name="identifier"
+                                    name="identify"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[14px] text-black">
-                                                Username or Email
-                                            </FormLabel>
+                                            <FormLabel className="text-[14px] text-black">Email эсвэл Username</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Enter username or email"
+                                                    placeholder="Email эсвэл username бичнэ үү"
                                                     {...field}
                                                     className="border outline-none focus-within:outline-none"
                                                 />
@@ -68,19 +96,17 @@ export default function SignIn() {
                                         </FormItem>
                                     )}
                                 />
-                                {/* Password field */}
+                                {/* 🔒 Нууц үг оруулах хэсэг */}
                                 <FormField
                                     control={form.control}
                                     name="password"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[14px] text-black">
-                                                Password
-                                            </FormLabel>
+                                            <FormLabel className="text-[14px] text-black">Password</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Enter password here"
                                                     type="password"
+                                                    placeholder="Нууц үг бичнэ үү"
                                                     {...field}
                                                     className="border outline-none focus-within:outline-none"
                                                 />
@@ -91,22 +117,25 @@ export default function SignIn() {
                                 />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full rounded-md bg-[#18181b]"
-                            >
+                            {/* 🖱️ Submit товч */}
+                            <Button type="submit" className="w-full rounded-md bg-[#18181b]">
                                 Submit
                             </Button>
 
+                            {/* 🔗 Бүртгэл байхгүй бол бүртгүүлэх линк */}
                             <div className="flex gap-2 my-3 mx-1">
-                                <p>Create new account?</p>
-                                <Link href="/signUp">
-                                    <p className="text-rose-400">Sign Up</p>
-                                </Link>
+                                <p>Бүртгэлгүй юу?</p>
+                                <a href="/signUp" className="text-rose-400">
+                                    Бүртгүүлэх
+                                </a>
                             </div>
                         </form>
                     </Form>
                 </div>
+                {/* ⚠️ Алдааны мессеж */}
+                {error && (
+                    <div className="text-red-500 text-sm text-center">{error}</div>
+                )}
             </div>
         </div>
     );
