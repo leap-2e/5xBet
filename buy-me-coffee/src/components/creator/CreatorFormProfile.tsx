@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Form,
     FormControl,
@@ -16,22 +16,17 @@ import { useForm } from 'react-hook-form';
 import { ProfileType, ProfileSchema } from './CreatorFormUtils';
 import axios from 'axios';
 
-import { UserButton } from "@clerk/nextjs";
+import { useAuth, UserButton } from "@clerk/nextjs"; // userid(token) Clerkees avah
 
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 const BASE_URL = process.env.BASE_URL!;
 
 export default function CreatorFormProfile() {
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    type CreateProfile = {
-        name: string,
-        bio: string,
-        socialMediaURL: string,
-        image: string,
-        user_id: number,
-    }
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const { userId } = useAuth()
+
 
     const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
@@ -52,7 +47,7 @@ export default function CreatorFormProfile() {
         }
     };
 
-    // 🎯 Cloudinary руу upload хийх
+    // 🎯 Cloudinary руу upload хийх function (duudagdaj ajjillana , onContinue dotor orson baigaa)
     const uploadImageToCloudinary = async (file: File) => {
         const formData = new FormData();
         formData.append('file', file);
@@ -74,7 +69,7 @@ export default function CreatorFormProfile() {
         if (file instanceof File) {
             try {
                 // 1. Upload Image
-                const imageUrl = await uploadImageToCloudinary(file);
+                const imageUrl = await uploadImageToCloudinary(file);  //uploadImageToCloudinary Function duudaj ajilluulj bn. imageUrl dotor avchlaa.
                 console.log('✅ Image uploaded to Cloudinary:', imageUrl);
 
                 // 2. Create Updated Values
@@ -84,12 +79,12 @@ export default function CreatorFormProfile() {
                 // 3. Send to Backend with Axios
                 console.log(BASE_URL);
 
-                const response = await axios.post(`${BASE_URL}/profile`, {
+                const response = await axios.post(`${BASE_URL}/profile`, {  //Backend руу явуулж бн
                     name: updatedValues.name,
                     about: updatedValues.bio,
                     avatar_image: updatedValues.image,
                     social_media_url: updatedValues.socialMediaURL,
-                    user_id: 19,
+                    user_id: userId,
                 }, {
                     headers: {
                         'Content-Type': 'application/json',
