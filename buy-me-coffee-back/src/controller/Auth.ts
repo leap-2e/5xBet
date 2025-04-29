@@ -17,7 +17,7 @@ export const signUp = async (req, res) => {
             success: true,
             message: "User created successfully!",
             user: result[0],
-        });
+        }
     } catch (error) {
         console.error("Signup error:", error.message);
 
