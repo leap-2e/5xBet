@@ -20,7 +20,7 @@ import { UserButton } from "@clerk/nextjs";
 
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+const BASE_URL = process.env.BASE_URL!;
 
 export default function CreatorFormProfile() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -32,9 +32,6 @@ export default function CreatorFormProfile() {
         image: string,
         user_id: number,
     }
-
-
-
 
     const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
@@ -77,21 +74,21 @@ export default function CreatorFormProfile() {
         if (file instanceof File) {
             try {
                 // 1. Upload Image
-                // const imageUrl = await uploadImageToCloudinary(file);
-                // console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+                const imageUrl = await uploadImageToCloudinary(file);
+                console.log('✅ Image uploaded to Cloudinary:', imageUrl);
 
                 // 2. Create Updated Values
-                // const updatedValues = { ...values, image: imageUrl };
-                // console.log('🔥 Final profile submit:', updatedValues);
+                const updatedValues = { ...values, image: imageUrl };
+                console.log('🔥 Final profile submit:', updatedValues);
 
                 // 3. Send to Backend with Axios
                 console.log(BASE_URL);
 
                 const response = await axios.post(`${BASE_URL}/profile`, {
-                    name: 'ursa',
-                    about: 'gamer',
-                    avatar_image: 'img url',
-                    social_media_url: 'insagramurl',
+                    name: updatedValues.name,
+                    about: updatedValues.bio,
+                    avatar_image: updatedValues.image,
+                    social_media_url: updatedValues.socialMediaURL,
                     user_id: 19,
                 }, {
                     headers: {
@@ -101,6 +98,7 @@ export default function CreatorFormProfile() {
 
                 console.log('🚀 Profile created successfully:', response.data);
             } catch (error: any) {
+                console.log(BASE_URL);
                 console.log('❌ Error creating profile:', error?.response?.data || error.message);
             }
         } else {
