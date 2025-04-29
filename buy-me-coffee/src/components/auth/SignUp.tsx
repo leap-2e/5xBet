@@ -13,10 +13,13 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import axios from "axios";
 
+const BASE_URL = process.env.BASE_URL!;
 
 export default function SignUp() {
     const router = useRouter();
+
     const { signUp, isLoaded, setActive } = useSignUp(); //CLERK
     const [haveUserName, setHaveUserName] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -45,7 +48,7 @@ export default function SignUp() {
         if (!isLoaded) return; // Clerk ачааллаж дуусаагүй бол буцаана
 
         try {
-            const result = await signUp.create({
+            const result = await signUp.create({  // Clerk ruu New user uusgej bn
                 emailAddress: values.email,
                 password: values.password,
                 username: values.username,
@@ -61,7 +64,25 @@ export default function SignUp() {
 
                 toast.success("Successfully signed up!"); // Амжилттай бүртгэгдсэн popup
 
-                router.push("/createProfile"); // Бүртгэл амжилттай бол профайл үүсгэх хуудас руу зөөнө
+                try {
+                    const response = await axios.post(`${BASE_URL}/auth`, {  //Backend руу явуулж бн
+                        userId: result.createdUserId,
+                        email: values.email,
+                        username: values.username,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    console.log('🚀 Profile created successfully:', response.data);
+
+                } catch (err: any) {
+                    console.log(err);
+
+                }
+
+                router.push("/createProfile"); // Бүртгэл амжилттай бол createProfile үүсгэх хуудас руу зөөнө
             } else {
                 console.log("⏳ Waiting for email verification");
                 toast.error("Please verify your email first."); // Имэйл баталгаажуулалт хүлээж байна
@@ -203,6 +224,7 @@ export default function SignUp() {
                                         {error}
                                     </div>
                                 )}
+                                <div id="clerk-captcha" />
                             </div>
                         </form>
                     </Form>
