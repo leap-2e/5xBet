@@ -5,9 +5,9 @@ import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { jwtDecode } from "jwt-decode";
 
-export default function ResetPass  () {
+
+export default function ResetPass() {
   console.log("testing stack pr 1");
   // batorgilmunkh88@gmail.com
   const [token, setToken] = useState<string | null>(null);
@@ -30,23 +30,23 @@ export default function ResetPass  () {
     toast("Email successfully sent");
   };
 
-//   const updatePassword = async () => {
-//     if (!token) return;
+  //   const updatePassword = async () => {
+  //     if (!token) return;
 
-//     const decode = jwtDecode(token as string);
-//     const response = await axios.post(
-//       `${BASE_URL}/auth/update-password`,
-//       {
-//         _id: decode.user._id,
-//         password: passwordRef.current.value,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-//   };
+  //     const decode = jwtDecode(token as string);
+  //     const response = await axios.post(
+  //       `${BASE_URL}/auth/update-password`,
+  //       {
+  //         _id: decode.user._id,
+  //         password: passwordRef.current.value,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //   };
   return (
     <div className="w-1/">
       <h1 className="font-semibold text-2xl mb-4">Reset password</h1>
@@ -55,7 +55,7 @@ export default function ResetPass  () {
           <Input placeholder="Enter your email..." ref={emailRef} />
 
           <Button onClick={resetPassword} className="w-full cursor-pointer">
-         Save Changes
+            Save Changes
           </Button>
         </div>
       ) : (
