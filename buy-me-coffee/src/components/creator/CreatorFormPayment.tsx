@@ -1,5 +1,3 @@
-'use client'
-
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
@@ -9,9 +7,18 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { PaymentSchema, type PaymentType } from "./CreatorFormUtils"
 import CountrySelect from "./Countries"
+import { useUserDataStore } from "@/app/hooks/zustand-User"
+import { useState } from "react"
+import { uploadImageToCloudinary } from "@/lib/utils"
+import { BASE_URL } from "@/app/constants/routes"
+import axios from "axios"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
-
-export default function CreatorFormPayment() {
+export default function CreatorFormPayment({ imageFile }: { imageFile: File }) {
+    const router = useRouter()
+    const profile = useUserDataStore((state) => state.profile);
+    const [selectedCountry, setSelectedCountry] = useState("")
 
     // ✅ useForm ашиглан Zod-ийн validation-г формд холбож, form-н анхны утгуудыг defaultValues ашиглан зааж өгч байна
     // 🛠️ initialize react-hook-form + Zod + define default value
@@ -28,17 +35,78 @@ export default function CreatorFormPayment() {
         },
     })
 
-    //values = all input values 
-    const onSubmit = (values: PaymentType) => {
-        console.log("✅ Payment Submitted:", values)
+    const onSubmit = async (values: PaymentType) => {
+        // console.log(values)      Payment info
+        // console.log(profile)     Profile info
+        // console.log(imageFile)  image string
+
+        // 1. cloudinary convert send.
+        // 2. profile and Payment send to Backend with roken
+        // 3. show loading animation
+
+        try {
+
+            const imageUrl = await uploadImageToCloudinary(imageFile); //waiting get Link from cloudinary
+
+            if (!imageUrl) {
+                console.log("cloudinary uplaod failed");
+            }
+
+            const response = await axios.post(`${BASE_URL}/profile`, {  //Backend руу явуулж бн
+                name: profile?.username,
+                about: profile?.about,
+                avatar_image: imageUrl,
+                social_media_url: profile?.social_media_url,
+                user_id: profile?.user_id,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log('🚀 Profile created successfully:', response.data);
+            if (response.status === 200) {
+                toast.success("🌟 Boom! Your profile is live. Let the magic begin! 🔥", {
+                    duration: 6000,
+                    style: {
+                        fontSize: "1.05rem",
+                        fontWeight: "600",
+                        color: "#1a1a1a",
+                    },
+                });
+                router.push("/home")
+            }
+        } catch (err: any) {
+            console.log('❌ Error creating profile:', err?.response?.data);
+            if (err?.response?.data?.message?.includes('unique constraint "profile_user_id_key"')) {
+                console.log("❗ A profile already exists for this user.");
+            }
+            toast.error("❗ A profile already exists for this user.")
+        }
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 mb-3">
 
                 {/* Country */}
-
+                <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field, fieldState }) => (
+                        <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <FormControl>
+                                <CountrySelect
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    fieldState={fieldState}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* First Name */}
@@ -49,7 +117,8 @@ export default function CreatorFormPayment() {
                             <FormItem>
                                 <FormLabel>First Name</FormLabel>
                                 <FormControl>
-                                    <CountrySelect></CountrySelect>
+                                    <Input placeholder="John" autoComplete="first-name" {...field} />
+
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -142,7 +211,8 @@ export default function CreatorFormPayment() {
                 <Button type="submit" className="w-full">
                     Submit Payment
                 </Button>
+
             </form>
-        </Form>
+        </Form >
     )
 }

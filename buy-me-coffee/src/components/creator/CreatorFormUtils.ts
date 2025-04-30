@@ -13,8 +13,11 @@ export const ProfileSchema = z.object({
     .min(1, "Bio is required")
     .max(300, "Bio can't be longer than 300 characters"),
 
-  image: z
-    .instanceof(File, { message: "Image is required" }),
+  image:
+    z.union([
+      z.instanceof(File),
+      z.string().min(1) // this handles Cloudinary URL or preview
+    ]),
 
   socialMediaURL: z
     .string()
