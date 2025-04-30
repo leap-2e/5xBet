@@ -1,5 +1,4 @@
-'use client'
-
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,12 +15,16 @@ import { useSignIn } from "@clerk/nextjs";
 import { SignInSchema } from "./SignUtils";
 import { Eye, EyeOff } from "lucide-react";
 
+
+
+
+
 export default function SignIn() {
     const router = useRouter();
 
-    const { signIn, isLoaded, setActive } = useSignIn(); // ➕ Clerk-аас хэрэглэгч нэвтрэх setup
-    const [showPassword, setShowPassword] = useState(false); // 🔐 Нууц үг харуулах эсэх
-    const [error, setError] = useState<string>(""); // ❗Алдааны мессеж хадгалах
+    const { signIn, isLoaded, setActive } = useSignIn(); // ➕ Clerk setup
+    const [showPassword, setShowPassword] = useState(false); // for password input hidden or show
+    const [error, setError] = useState<string>("");
 
     const form = useForm<z.infer<typeof SignInSchema>>({
         resolver: zodResolver(SignInSchema),
@@ -31,26 +34,26 @@ export default function SignIn() {
         },
     });
 
-    // 🧠 Нэвтрэх товч дарахад дуудагдах функц
     const onSubmit = async (values: z.infer<typeof SignInSchema>) => {
-        if (!isLoaded) return;
+        if (!isLoaded) return; // Clerk ачааллаж дуусаагүй бол буцаана
 
         try {
-            const result = await signIn.create({
-                identifier: values.identify, // ✉️ Email эсвэл username
+            const result = await signIn.create({ // Clerk ruu New user uusgej bn
+                identifier: values.identify, // 🎯 Username эсвэл Email
                 password: values.password,
             });
 
             if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId }); // ✅ Session идэвхжүүлнэ
-                toast.success("Амжилттай нэвтэрлээ ✅");
+                await setActive({ session: result.createdSessionId }); // Шинэ хэрэглэгчийн session-г идэвхжүүлнэ
+                toast.success("Successfully Signed In  ✅");
 
-                router.push("/dashboard"); // 🎯 Амжилттай бол шууд dashboard руу оруулна
+
+                router.push("/createProfile"); // Бүртгэл амжилттай бол createProfile үүсгэх хуудас руу зөөнө
             } else {
-                toast.info("Имэйл баталгаажуулалт шаардлагатай ⏳");
+                toast.info("Please complete the required steps ⏳");
             }
         } catch (err: any) {
-            const errorMessage = err?.errors?.[0]?.message || "Алдаа гарлаа. Дахин оролдоно уу.";
+            const errorMessage = err?.errors?.[0]?.message || "Something went wrong. Try again.";
             console.error("SignIn error:", errorMessage);
             setError(errorMessage);
             toast.error(errorMessage);
@@ -73,7 +76,7 @@ export default function SignIn() {
                                             <FormLabel className="text-[14px] text-black">Username or Email</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Email or Username"
+                                                    placeholder="Enter email or username"
                                                     {...field}
                                                     className="border outline-none focus-within:outline-none"
                                                 />
@@ -89,12 +92,13 @@ export default function SignIn() {
                                     name="password"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[14px] text-black">Your Password</FormLabel>
+                                            <FormLabel className="text-[14px] text-black">Password</FormLabel>
                                             <div className="flex relative">
+
                                                 <FormControl>
                                                     <Input
                                                         type={showPassword ? "text" : "password"}
-                                                        placeholder="Enter your password"
+                                                        placeholder="Enter password here"
                                                         {...field}
                                                         className="border outline-none focus-within:outline-none"
                                                     />
@@ -107,6 +111,7 @@ export default function SignIn() {
                                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                                 </button>
                                             </div>
+
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -118,20 +123,16 @@ export default function SignIn() {
                             </Button>
 
                             <div className="flex gap-2 my-3 mx-1">
-                                <p>Create an account?</p>
-                                <Link href="/signUp">
-                                    <p className="text-rose-400">Sign Up</p>
-                                </Link>
+                                <p> Create new account</p>
+                                <Link href="/signUp"><p className="text-rose-400">Sign Up</p></Link>
                             </div>
                         </form>
                     </Form>
                 </div>
 
-                {/* ❗Алдааны мессеж */}
                 {error && (
                     <div className="text-red-500 text-sm text-center">{error}</div>
                 )}
-
                 <div id="clerk-captcha" />
             </div>
         </div>
