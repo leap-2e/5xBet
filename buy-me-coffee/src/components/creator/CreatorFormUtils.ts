@@ -2,18 +2,18 @@ import { z } from "zod"
 
 
 // 🧠 Zod ашиглан Schema үүсгэж байна
-  export  const ProfileSchema = z.object({
-    name: z
+export const ProfileSchema = z.object({
+  name: z
     .string()
     .min(1, "Name is required")
     .min(2, "Name must be at least 2 characters"),
 
-  about: z
+  bio: z
     .string()
     .min(1, "Bio is required")
     .max(300, "Bio can't be longer than 300 characters"),
 
-    avatarImage: z
+  image: z
     .instanceof(File, { message: "Image is required" }),
 
   socialMediaURL: z
