@@ -1,56 +1,117 @@
-'use client'
+'use client';
 
+import { useState } from 'react';
 import {
-    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { ProfileFormData, ProfileSchema } from "./FormUtils" //zod schema + type
-import { useState } from "react"
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { ProfileType, ProfileSchema } from './CreatorFormUtils';
+import axios from 'axios';
 
+import { useAuth, UserButton } from "@clerk/nextjs"; // userid(token) Clerkees avah
+
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+const BASE_URL = process.env.BASE_URL!;
 
 export default function CreatorFormProfile() {
 
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [image, setImage] = useState<File | null>(null)
-    const [userData, setUserData] = useState<ProfileFormData>()
+    const { userId } = useAuth()
 
-    // ✅ useForm ашиглан Zod-ийн validation-г формд холбож, form-н анхны утгуудыг defaultValues ашиглан зааж өгч байна
-    const form = useForm<ProfileFormData>({
+
+    const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
         defaultValues: {
-            name: "",
-            bio: "",
+            name: '',
+            bio: '',
             image: undefined,
-            socialMediaURL: "",
+            socialMediaURL: '',
+        },
+    });
+
+    // 🎯 Файлаа авна
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            form.setValue('image', file); // React Hook Form-д file хадгална
+            setImagePreview(URL.createObjectURL(file)); // Зураг урьдчилж preview хийнэ
         }
-    })
+    };
 
-    //values = all input values 
-    const onSubmit = (values: ProfileFormData) => {
-        setUserData(values)
-        console.log(userData);
+    // 🎯 Cloudinary руу upload хийх function (duudagdaj ajjillana , onContinue dotor orson baigaa)
+    const uploadImageToCloudinary = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
 
-    }
+        const res = await axios.post(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+            formData
+        );
 
+        return res.data.secure_url as string;
+        // Шууд Cloudinary линк буцаана
+    };
+    const onContinue = async (values: ProfileType) => {
+        console.log('🛠️ Form values before upload:', values);
 
-    const handleImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selected = event.target.files?.[0];
-        if (!selected) return;
-        setImage(selected);
-        setImagePreview(URL.createObjectURL(selected));
+        const file = values.image;
+
+        if (file instanceof File) {
+            try {
+                // 1. Upload Image
+                const imageUrl = await uploadImageToCloudinary(file);  //uploadImageToCloudinary Function duudaj ajilluulj bn. imageUrl dotor avchlaa.
+                console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+
+                // 2. Create Updated Values
+                const updatedValues = { ...values, image: imageUrl };
+                console.log('🔥 Final profile submit:', updatedValues);
+
+                // 3. Send to Backend with Axios
+                console.log(BASE_URL);
+
+                const response = await axios.post(`${BASE_URL}/profile`, {  //Backend руу явуулж бн
+                    name: updatedValues.name,
+                    about: updatedValues.bio,
+                    avatar_image: updatedValues.image,
+                    social_media_url: updatedValues.socialMediaURL,
+                    user_id: userId,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('🚀 Profile created successfully:', response.data);
+            } catch (error: any) {
+                console.log(BASE_URL);
+                console.log('❌ Error creating profile:', error?.response?.data || error.message);
+            }
+        } else {
+            console.log('⚠️ No image file to upload');
+        }
     };
 
     return (
         <div className="w-full h-full">
+            <UserButton></UserButton>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onContinue)} className="space-y-6">
+
+                    {/* 📸 Image upload */}
                     <FormField
                         control={form.control}
                         name="image"
-                        render={({ field }) => (
+                        render={() => (
                             <FormItem>
                                 <FormLabel>Upload Image</FormLabel>
                                 <FormControl>
@@ -66,13 +127,7 @@ export default function CreatorFormProfile() {
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0]
-                                                if (file) {
-                                                    form.setValue("image", file)
-                                                    setImagePreview(URL.createObjectURL(file))
-                                                }
-                                            }}
+                                            onChange={handleImageChange}
                                             className="absolute inset-0 opacity-0 cursor-pointer"
                                         />
                                     </label>
@@ -82,6 +137,7 @@ export default function CreatorFormProfile() {
                         )}
                     />
 
+                    {/* 🧍 Name */}
                     <FormField
                         control={form.control}
                         name="name"
@@ -89,14 +145,14 @@ export default function CreatorFormProfile() {
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter your name here here" {...field} />
+                                    <Input placeholder="Enter your name" {...field} />
                                 </FormControl>
-
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
 
+                    {/* 📝 Bio */}
                     <FormField
                         control={form.control}
                         name="bio"
@@ -104,32 +160,35 @@ export default function CreatorFormProfile() {
                             <FormItem>
                                 <FormLabel>About</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Write about yourself here" {...field} />
+                                    <Input placeholder="Write about yourself" {...field} />
                                 </FormControl>
-
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
 
+                    {/* 🔗 Social Media URL */}
                     <FormField
                         control={form.control}
                         name="socialMediaURL"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Social media URL</FormLabel>
+                                <FormLabel>Social Media URL</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https.//" {...field} />
+                                    <Input placeholder="https://" {...field} />
                                 </FormControl>
-
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit">Submit</Button>
+
+                    {/* 🔥 Continue Button */}
+                    <Button type="submit" className="w-full">
+                        Continue
+                    </Button>
+
                 </form>
             </Form>
         </div>
-    )
+    );
 }
-

@@ -7,11 +7,16 @@ import {
 } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
-import { PaymentFormSchema, type PaymentFormData } from "./FormUtils"
+import { PaymentSchema, type PaymentType } from "./CreatorFormUtils"
+import CountrySelect from "./Countries"
+
 
 export default function CreatorFormPayment() {
-    const form = useForm<PaymentFormData>({
-        resolver: zodResolver(PaymentFormSchema),
+
+    // ✅ useForm ашиглан Zod-ийн validation-г формд холбож, form-н анхны утгуудыг defaultValues ашиглан зааж өгч байна
+    // 🛠️ initialize react-hook-form + Zod + define default value
+    const form = useForm<PaymentType>({
+        resolver: zodResolver(PaymentSchema),
         defaultValues: {
             country: "",
             firstname: "",
@@ -23,7 +28,8 @@ export default function CreatorFormPayment() {
         },
     })
 
-    const onSubmit = (values: PaymentFormData) => {
+    //values = all input values 
+    const onSubmit = (values: PaymentType) => {
         console.log("✅ Payment Submitted:", values)
     }
 
@@ -32,19 +38,7 @@ export default function CreatorFormPayment() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                 {/* Country */}
-                <FormField
-                    control={form.control}
-                    name="country"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Country</FormLabel>
-                            <FormControl>
-                                <Input placeholder="USA" autoComplete="country-name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* First Name */}
@@ -55,7 +49,7 @@ export default function CreatorFormPayment() {
                             <FormItem>
                                 <FormLabel>First Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="John" autoComplete="given-name" {...field} />
+                                    <CountrySelect></CountrySelect>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

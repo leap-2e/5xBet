@@ -1,33 +1,23 @@
-import { client } from "../utils/connection"
+import { client } from "../utils/connection";
 
-export const signUp =  async(req,res,body) => {
-    try {
-        const result = await client.query(`INSERT INTO users (username,email,password) VALUES ('${req.body.username}', '${req.body.email}', '${req.body.password}')`);
-        res.status(200).json({success:true , result})
-    } catch (error) {
-        res.status(400).json({success:false, message: error.message, body : req.body})
-    }
-}
-export const signIn = async(req,res) => {
-    try {
+export const createProfile = async (req, res) => {
+    try{
 
-    } catch(error){
-        res.status(400).json({success:false, message: error.message})
+        const result = await client.query(`INSERT INTO profile (name, about, avatar_image, social_media_url, bg_img, user_id) VALUES ($1, $2, $3,$4,$5,$6) RETURNING *`, [ req.body.name, req.body.about, req.body.avatar_image, req.body.social_media_url, req.body.bg_image, req.body.user_id]);
+
+        res.status(200).json({ success: true, result });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
     }
 }
-export const refresh = async(req,res) => {
-    try {
-        const result = await client.query(`SELECT * FROM users`);
-        res.status(200).json({success:true , result})
+
+
+export const getUserProfile = async (req, res) => {
+    try{
+        const result = await client.query(`SELECT * FROM profile WHERE id = $1`, [req.params.id]);
+        res.status(200).json({ success: true, result });
     } catch (error) {
-        res.status(400).json({success:false, message: error.message})
-    }
-}
-export const getUser = async(req,res) => {
-    try {
-        const result = await client.query(`SELECT * FROM users WHERE id = ${req.params.id}`);
-        res.status(200).json({success:true , result})
-    } catch (error) {
-        res.status(400).json({success:false, message: error.message})
+        res.status(400).json({ success: false, message: error.message });
+        console.log(error);
     }
 }

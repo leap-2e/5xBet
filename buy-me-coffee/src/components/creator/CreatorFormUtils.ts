@@ -8,12 +8,12 @@ import { z } from "zod"
     .min(1, "Name is required")
     .min(2, "Name must be at least 2 characters"),
 
-  bio: z
+  about: z
     .string()
     .min(1, "Bio is required")
     .max(300, "Bio can't be longer than 300 characters"),
 
-    image: z
+    avatarImage: z
     .instanceof(File, { message: "Image is required" }),
 
   socialMediaURL: z
@@ -23,7 +23,7 @@ import { z } from "zod"
 })
 
 
-export const PaymentFormSchema = z.object({
+export const PaymentSchema = z.object({
   country: z.string().min(1, "Country is required"),
   firstname: z.string().min(1, "First name is required"),
   lastname: z.string().min(1, "Last name is required"),
@@ -49,8 +49,8 @@ export const PaymentFormSchema = z.object({
 
 
 // ✅ TypeScript-д зориулсан Type автоматаар schema-гаас үүсгэж байна
-export type ProfileFormData = z.infer<typeof ProfileSchema>
+export type ProfileType = z.infer<typeof ProfileSchema>
 
-export type PaymentFormData = z.infer<typeof PaymentFormSchema>
+export type PaymentType = z.infer<typeof PaymentSchema>
 
 
