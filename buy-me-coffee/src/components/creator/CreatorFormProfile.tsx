@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import {
     Form,
     FormControl,
@@ -14,98 +11,47 @@ import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { ProfileType, ProfileSchema } from './CreatorFormUtils';
-import axios from 'axios';
+import { useUserDataStore } from "@/app/hooks/zustand-User"
 
-import { useAuth, UserButton } from "@clerk/nextjs"; // userid(token) Clerkees avah
+type CreatorFormProfileFormProps = {
+    onContinue: (values: ProfileType) => void;
+    setImagePreview: (url: string) => void;
+    imagePreview?: string | null;
+    imageFile: (file: File) => void
+};
 
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-const BASE_URL = process.env.BASE_URL!;
 
-export default function CreatorFormProfile() {
+export default function CreatorFormProfile({ onContinue, setImagePreview, imagePreview, imageFile }: CreatorFormProfileFormProps) {
 
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const { userId } = useAuth()
-
+    const { profile } = useUserDataStore()
 
     const form = useForm<ProfileType>({
         resolver: zodResolver(ProfileSchema),
         defaultValues: {
-            name: '',
-            bio: '',
-            image: undefined,
-            socialMediaURL: '',
+            name: profile?.username || '',
+            bio: profile?.about || '',
+            image: profile?.image || undefined,
+            socialMediaURL: profile?.social_media_url || '',
         },
     });
 
     // 🎯 Файлаа авна
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const file = e.target.files?.[0]; //file helbereer
         if (file) {
             form.setValue('image', file); // React Hook Form-д file хадгална
-            setImagePreview(URL.createObjectURL(file)); // Зураг урьдчилж preview хийнэ
-        }
-    };
-
-    // 🎯 Cloudinary руу upload хийх function (duudagdaj ajjillana , onContinue dotor orson baigaa)
-    const uploadImageToCloudinary = async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', UPLOAD_PRESET);
-
-        const res = await axios.post(
-            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-            formData
-        );
-
-        return res.data.secure_url as string;
-        // Шууд Cloudinary линк буцаана
-    };
-    const onContinue = async (values: ProfileType) => {
-        console.log('🛠️ Form values before upload:', values);
-
-        const file = values.image;
-
-        if (file instanceof File) {
-            try {
-                // 1. Upload Image
-                const imageUrl = await uploadImageToCloudinary(file);  //uploadImageToCloudinary Function duudaj ajilluulj bn. imageUrl dotor avchlaa.
-                console.log('✅ Image uploaded to Cloudinary:', imageUrl);
-
-                // 2. Create Updated Values
-                const updatedValues = { ...values, image: imageUrl };
-                console.log('🔥 Final profile submit:', updatedValues);
-
-                // 3. Send to Backend with Axios
-                console.log(BASE_URL);
-
-                const response = await axios.post(`${BASE_URL}/profile`, {  //Backend руу явуулж бн
-                    name: updatedValues.name,
-                    about: updatedValues.bio,
-                    avatar_image: updatedValues.image,
-                    social_media_url: updatedValues.socialMediaURL,
-                    user_id: userId,
-                }, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                console.log('🚀 Profile created successfully:', response.data);
-            } catch (error: any) {
-                console.log(BASE_URL);
-                console.log('❌ Error creating profile:', error?.response?.data || error.message);
-            }
-        } else {
-            console.log('⚠️ No image file to upload');
+            setImagePreview(URL.createObjectURL(file));// Зураг урьдчилж preview хийнэ URL helbereer img src= ...
+            imageFile(file); // image as File
         }
     };
 
     return (
         <div className="w-full h-full">
-            <UserButton></UserButton>
+
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onContinue)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onContinue)}
+
+                    className="space-y-6">
 
                     {/* 📸 Image upload */}
                     <FormField

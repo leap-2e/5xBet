@@ -9,7 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
 import { useState } from "react"
-import { ProfileFormData, ProfileSchema } from "@/components/creator/FormUtils"
+import { ProfileSchema } from "@/components/creator/CreatorFormUtils"
+
 
 
 export default function EdithProfile() {
@@ -29,7 +30,7 @@ export default function EdithProfile() {
         }
     })
 
-    //values = all input values 
+    //values = all input values
     const onSubmit = (values: ProfileFormData) => {
         setUserData(values)
         console.log(userData);

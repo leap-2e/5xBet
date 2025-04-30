@@ -20,38 +20,38 @@ import {
     CommandEmpty,
 } from "@/components/ui/command"
 
-export default function CountrySelect() {
-    const [countries, setCountries] = useState<any[]>([])
+interface CountrySelectProps {
+    value: string;
+    onChange: (value: string) => void;
+    fieldState?: {
+        invalid?: boolean;
+        error?: { message?: string };
+    };
+}
+
+
+export default function CountrySelect({ value, onChange, fieldState }: CountrySelectProps) {
     const [open, setOpen] = useState(false)
-    const [value, setValue] = useState("")
+    const [countries, setCountries] = useState<any[]>([])
 
     useEffect(() => {
         axios.get("https://restcountries.com/v3.1/all")
-            .then((response) => {
-                // console.log(response.data)
-                setCountries(response.data)
-            })
-            .catch((error) => {
-                console.error("Error fetching countries:", error)
-            })
+            .then((res) => setCountries(res.data))
+            .catch((err) => console.error("Error fetching countries:", err))
     }, [])
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-[200px] justify-between"
-                >
-                    {value
-                        ? countries.find((c) => c.name.common === value)?.name.common
-                        : "Select a country"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <Button variant="outline" role="combobox" className={cn(
+                    "w-full justify-between",
+                    fieldState?.invalid ? "text-red-500 border-red-500" : "text-gray-700"
+                )}>
+                    {value || "Select a country"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent className="w-full p-0">
                 <Command>
                     <CommandInput placeholder="Search country..." />
                     <CommandList>
@@ -61,16 +61,13 @@ export default function CountrySelect() {
                                 <CommandItem
                                     key={country.cca3}
                                     value={country.name.common}
-                                    onSelect={(currentValue) => {
-                                        setValue(currentValue === value ? "" : currentValue)
+                                    onSelect={(val) => {
+                                        onChange(val)
                                         setOpen(false)
                                     }}
                                 >
                                     <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            value === country.name.common ? "opacity-100" : "opacity-0"
-                                        )}
+                                        className={cn("mr-2 h-4 w-4", value === country.name.common ? "opacity-100" : "opacity-0")}
                                     />
                                     {country.name.common}
                                 </CommandItem>
