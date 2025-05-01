@@ -120,9 +120,71 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  password: 'password',
+  username: 'username',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProfileScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  bio: 'bio',
+  avatar: 'avatar',
+  socials: 'socials',
+  bgImg: 'bgImg',
+  successMessage: 'successMessage',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BankCardScalarFieldEnum = {
+  id: 'id',
+  country: 'country',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  cardNumber: 'cardNumber',
+  expiryDate: 'expiryDate',
+  cvv: 'cvv',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.DonationScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  message: 'message',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
-
+  User: 'User',
+  Profile: 'Profile',
+  BankCard: 'BankCard',
+  Donation: 'Donation'
 };
 
 /**

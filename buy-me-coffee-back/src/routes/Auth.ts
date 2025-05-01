@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { signUp, getUser, updateUser } from "../controller/Auth";
+import { GET } from "../controller/Auth";
+// import { signUp, getUser, updateUser } from "../controller/Auth";
 
 const authRouter = Router();
 
-authRouter.post("/", signUp)
+authRouter.get("/", GET)
 
-authRouter.get("/:id", getUser)
+// authRouter.get("/:id", getUser)
 
-authRouter.patch("/:id", updateUser)
+// authRouter.patch("/:id", updateUser)
 
 
 export {
