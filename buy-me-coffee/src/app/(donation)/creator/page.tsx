@@ -1,32 +1,23 @@
-import { ChevronDown } from 'lucide-react'
-import Image from 'next/image'
-import React from 'react'
+"use client";
+import React, { useState } from "react";
+import StepOne from "./StepOne";
+import StepTwo from "./StepTwo";
 
-const page = () => {
-  return (
-    <div className='[&>*]:mx-auto'>
-      <div className='flex justify-between items-center py-4 w-[1280px]'>
-        <Image src="https://res.cloudinary.com/df4naqoki/image/upload/v1745750704/Logo_1_ismxqn.png" alt="creator" width={151} height={24} />
-        <div className='flex justify-between items-center w-[187px]'>
-            <div className='flex gap-2 items-center'>
-                <Image src="https://res.cloudinary.com/df4naqoki/image/upload/v1745287673/samples/dessert-on-a-plate.jpg" alt="creator" width={40} height={40} className='rounded-full bg-fill'/>
-                <span>test</span>
-            </div>
-            <ChevronDown/>
+const Page = () => {
+
+    const [changePage, setChangePage] = useState<number>(0);
+    const FormStep = [StepOne, StepTwo][changePage];
+    console.log(StepOne, StepTwo);
+    const next = () => {
+        setChangePage(changePage + 1);
+    };
+    const back = () => {
+        setChangePage(changePage - 1);
+    };
+    return (
+        <div>
+            <FormStep next={next} back={back} />
         </div>
-      </div>
-      <div className='bg-red-800 h-[320px]'>
-      </div>
-      <div className='w-[1280px] flex gap-5'>
-        <div className='flex-1'>
-
-        </div>
-        <div className='flex-1'>
-
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default page
+    );
+};
+export default Page;
